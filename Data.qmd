@@ -1,0 +1,163 @@
+---
+title: "Data"
+format: html
+editor: source
+---
+
+## Packages
+```{r packages}
+library(tidyverse)
+library(readxl)
+library(janitor)
+library(RcppRoll)
+library(IDPmisc)
+library(data.table)
+library(modelsummary)
+library(stargazer)
+
+library(vdemdata)
+library(democracyData)
+
+```
+
+
+## Project title: Determinants of Incumbent Overstay Attempts and Outcomes
+
+## Abstract
+
+This study aims to provide a comprehensive analysis of the factors influencing political leaders' decisions to either voluntarily step down or attempt to overstay in power. By employing a sample selection model, the research explores the effects of economic performance, the post‐Cold War era, regime types, and levels of democracy on overstay attempts. Furthermore, it examines the influence of incumbency advantages on the likelihood of successful overstay attempts. Through a quantitative analysis based on a new dataset of overstays, this study contributes to the existing literature by offering valuable insights into the determinants of overstay attempts and their outcomes.
+
+## Data
+
+### Dependent variable
+
+-   **Event of attempts of overstays (*Attempts*)**: 1 if the leader attempts to overstay; 0 otherwise.
+-   **Success of overstays (*Success*)**: 1 if the attempt succeeds; 0 if failed.
+
+The data is coded by the author of this study based on the datasets of:
+  - incumbent takeover [@baturo2022]
+  - leaders dataset: leader_reign 
+  - comparative constitutional project: ccp
+```{r overstays}
+overstays <- read_excel("data/Overstays_Reddy.xlsx")
+
+
+IncumbentTakeovers <- read_excel("data/IncumbentTakeovers.xls")%>% 
+  filter(starty>1940)
+
+view(IncumbentTakeovers)
+
+Leader_reign <- read_csv("data/leader_reign.csv") %>% 
+  mutate(edate=20) %>% 
+  mutate(startdate=as.Date(paste(syear,smonth,sdate,sep = "-")),
+         enddate=as.Date(paste(eyear,emonth,edate,sep = "-")),
+         enddate=replace_na(enddate,Sys.Date()),
+         eyear=year(enddate),
+         days=enddate-startdate) %>% 
+  filter(enddate-startdate>364,
+         eyear>1945) %>% 
+  select(ccode,stateabb,leader_reign=leader,syear,eyear,startdate,enddate,days)
+
+view(Leader_reign)
+
+ccpTerm <- read.csv("data/ccp.csv") 
+
+
+
+```
+
+
+### Independent variables
+
+-   **Economic index (*GDPpc* & *Eco_growth*)**: The study utilizes GDP per capita and economic performance as key indicators of economic influence. Economic performance is measured by calculating the 5-year moving average GDP per capita, comparing the value in the year of overstays with the value from three years earlier. In cases where leaders do not attempt to overstay, the value from the end year of their ruling is used instead. The dataset comes from V-Dem Data.
+
+```{r GDP}
+GDP <- vdem %>% 
+  select(ccode=COWcode,country_name,GDPyear=year,GDP=e_gdp,GDPpc=e_gdppc,population=e_pop) %>% 
+  filter(GDPyear>1940) %>% 
+  group_by(ccode) %>% 
+  arrange(ccode,GDPyear) %>% 
+  mutate(GDP_MA5=roll_mean(GDPpc,n=5,fill=0,align="right")) %>% 
+  mutate(EcoPerformance=GDPpc/lag(GDP_MA5,n=1)) %>%
+  mutate(EcoPerformance_lag=GDP_MA5/lag(GDP_MA5,n=3))
+```
+
+-   **Post-Cold War (*postColdWar*)**: 1 if the event occurs after 1990, 0 otherwise.
+
+-   **Regime types (*Regime_type*):** The regime types, as discussed in Part III, are based on the dataset coded by Anckar [@anckar2018].
+
+```{r regime}
+regime <- anckar %>% 
+  filter(year>1944) %>% 
+  select(ccode=cown,GWn,country=extended_country_name, pyear=year,regime =regimebroadcat) %>% 
+  mutate(Regime_type=case_when(regime %in% c("Semi-presidentialism",
+                                             "Presidentialism")~"Presidential",
+                               regime %in% c("Parliamentarism","Semi-monarchy")~"Parliamentarism",
+                               regime %in% c("Party-based rule","Oligarchy")~"Party",
+                               regime =="Personalist rule"~"Personal",
+                               regime =="Military rule"~"Military",
+                               regime =="Absolute monarchy"~"Monarchy",
+                               .default = "Other"),
+         Parliamentarism=if_else(regime=="Parliamentarism",1,0))
+view(regime)
+
+REIGN %>% 
+  count(gwf_regimetype) #GWF regime type
+```
+
+-   **Degree of democracy (*polity*)**: This study employs the scores of Polity 5 as a measurement to determine the degree of democracy in each country. To account for potential variations in Polity 5 scores over time within the same leader's rule, this study utilizes the score corresponding to the event year in question.
+
+```{r Polity5}
+Polity5 <- polity5%>%
+  filter(year>1944) %>% 
+  select(ccode=polity_annual_ccode,extended_country_name, pyear=year,polity) 
+
+view(Polity5)
+```
+
+### Control variables
+
+-   **Population size (*logpop*)**: The population size (logged) for each country in this study is obtained from the V-Dem Data. Previous literature, including studies by [@wells1974],[@barro1999determinants], and [@gassebner2016], has examined the influence of country size, either in terms or land area and population, on politics. Building upon this research, this study posits that attempts to overstay in office are more likely to occur in countries with smaller populations. The rationale behind this is that incumbent leaders find it comparatively easier to maintain control over smaller countries. In such cases, the population size is smaller, resulting in fewer diverse interest groups, ethnicities, and religions. On the other hand, in larger countries with a larger population, there are more diverse groups and forces that can potentially oppose attempts to overstay in power.
+
+```{r pop}
+population <- vdem %>% 
+  select(ccode=COWcode,country_name,population=e_pop,population2=e_wb_pop,year) %>% 
+  filter(year>1940) %>% 
+  view()
+```
+
+-   **Entry mode (*entry*)**: In this study, the entry mode is categorized as regular if a leader comes to power through a constitutional process such as an election. Conversely, the entry mode is classified as irregular if a leader assumes power through an unconstitutional means, such as a coup. The inclusion of the entry mode variable as a control variable in this study is based on the assumption that leaders who come to power in a regular manner are more likely to adhere to the original norms and established governance practices. The data regarding the entry mode is obtained from the Archigos Dataset[@goemans2009].
+
+```{r entry}
+
+leader_entry <- read_delim("data/1March_Archigos_4.1.txt", 
+    delim = "\t", escape_double = FALSE, 
+    trim_ws = TRUE) %>% 
+  mutate(entry_year=year(ymd(startdate)))%>% 
+  select(3:5,entry_year,6:9) %>% 
+  filter(entry_year>1940) 
+View(leader_entry)
+```
+
+-   **Previous coups**: Powell coup dataset
+
+```{r}
+coups <- vdem %>% 
+  select(COWcode,country_name,year,`Presidential election`=v2xel_elecpres,`Number of successful coups`=e_coups,Coup_powell=e_pt_coup,`HOS term length by law
+`=v2exfxtmhs,`HOG term length by law
+`=v2exfxtmhg,Regimes=v2x_regime_amb,`Regime end type`=v2regendtype) %>% 
+  filter(year>1940)
+```
+
+-   **Years in power (*years_in_power*)**: The variable "years in power" captures the duration that incumbents have served in office up to the year of the event. In cases where the leader does not attempt to overstay their tenure, the entire duration of their time in power is coded. The rationale behind including the years in power variable is rooted in the assumption that the longer incumbents stay in office, the more powerful they become. It is believed that powerful leaders are more likely to succeed in their attempts to overstay in office, as their influence and control over the political system grow over time, which in turn encourages them to make such attempts.
+
+```{r years in power}
+leader_entry <- leader_entry %>% 
+  mutate(days_in_power=ymd(enddate)-ymd(startdate))
+
+View(leader_entry)
+```
+
+## Methodology
+
+This study utilizes `probit` model to conduct the regression analysis and assess the impact of different variables on the probabilities of overstays.
