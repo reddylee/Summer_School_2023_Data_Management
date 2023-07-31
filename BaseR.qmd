@@ -1,0 +1,168 @@
+---
+title: "Base R"
+format: html
+editor: visual
+---
+
+## Packages
+
+```{r}
+library(tidyverse)
+library(stringr)
+```
+
+## a single case
+
+```{r}
+content<-'Marius is the instructor in the "web collection and data management" course. Johannes too. But Johannes went home on Sunday. There are 6 students in this course. Three of them are present. Martijn is the instructor in the "text as data" course. There are 10 students enrolled.'
+
+df <- data.frame(Role=c("Instructor1","Instructor2","Sudents","In Person"),
+                 Number=c(1,1,6,2))
+df
+```
+```{r}
+grepl("",content)
+```
+```{r}
+regexpr("instructor",content)
+```
+```{r}
+gregexpr("instructor",content)
+```
+```{r}
+gsub("\\.","!",content)
+```
+
+```{r}
+students_enrolled <- str_extract_all(content,"[0-9]{1,2} (?=students)")
+students_enrolled
+```
+```{r}
+instructors_enrolled <- str_extract_all(content,"^(\\.)[A-Z][a-z]*")
+instructors_enrolled
+```
+```{r}
+str_extract_all(content, "^[A-Z][a-z]+|(?=.)[A-Z][a-z]+")
+```
+
+```{r}
+li <- list(name=c("Martin","Johanes"),
+           course=c("Web collection","Text"))
+
+gsub("o","",li[[2]])
+li[[2]]
+```
+```{r}
+attributes(li[[1]])
+li$course[2]
+
+class(li$name)
+typeof(li$course)
+attributes(li)
+str(li)
+```
+```{r}
+chr_data <- c("Data","Daft","YouTube","channel",
+              "learn","and","have","FUN!")
+str_length("awefon8g-gn951nksjdg")
+str_length(chr_data)
+str_to_upper(chr_data)
+str_to_lower(chr_data)
+str_to_title(chr_data)
+
+str_to_sentence("make me into a sentence!")
+```
+```{r}
+str_trim(" Trim Me! ")
+```
+```{r}
+str_pad("Pad Me!", width = 15, side = "both")
+```
+```{r}
+str_trunc("If you have a long string, you might want to truncate it!",width = 48)
+```
+```{r}
+str_split("Split Me!",pattern = " ")
+```
+```{r}
+str_c("Join", "me!",sep = "_")
+
+str_c(c("Join","vectros"),c("Me!","too!"),sep="-")
+
+str_c(c("Turn","me","into","one","string!"),collapse = " ")
+```
+```{r}
+str_replace_na(c("Make",NA, "strings!"),"me")
+```
+```{r}
+sort_data <- c("sort","me","please!")
+str_order(sort_data)
+```
+```{r}
+sort_data[str_order(sort_data)]
+```
+```{r}
+str_sort(sort_data,dec=T)
+```
+```{r}
+first <- c("Luke","Han","Jean-Luc")
+last <- c("Skywalker","Sole","Picard")
+
+str_glue("My name is {first}, {first} {last}.")
+```
+
+```{r}
+minimum_age <- 18
+over_minimum <- c(5,17,33)
+
+str_glue("{first} {last} is {minimum_age+over_minimum} years old.")
+```
+```{r}
+num <- c(1:5)
+
+str_glue("The square root of {num} is {round (sqrt(num),3)}.")
+```
+```{r}
+str_glue("My age is {sqrt(2500)}.")
+```
+```{r}
+fuel_efficiency <- 30
+
+mtcars %>% 
+  rownames_to_column("Model") %>% 
+  filter(mpg>fuel_efficiency) %>% 
+  str_glue_data("The {Model} gets over {mpg} mpg.")
+```
+```{r}
+data("fruit")
+```
+
+```{r}
+fruit
+str_count(fruit)
+```
+```{r}
+mean(str_count(fruit))
+```
+```{r}
+sum(str_count(fruit,"berry"))
+
+berries <- str_count(fruit,"berry")
+
+notberries <- str_subset(fruit,"berry",negate = T)
+```
+
+```{r}
+writeLines("string")
+library(readr)
+
+writeLines("\\?")
+
+writeLines("1 t string")
+writeLines("1 \t string")
+```
+
+## for-loop
+
+
+## function

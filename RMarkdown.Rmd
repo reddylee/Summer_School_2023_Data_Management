@@ -1,0 +1,47 @@
+---
+title: "R Markdown"
+author: "Reddy Lee"
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    theme: cerulean
+    toc: yes
+    toc_float: yes
+---
+# Setup 
+
+Today is `r Sys.Date()`.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	message = FALSE,
+	warning = FALSE,
+	include = FALSE
+)
+library(tidyverse)
+library(babynames)
+```
+
+## Example
+```{r echo=TRUE}
+x <- 4
+```
+
+My age is `r sqrt(2500)`.
+
+## Solution
+
+
+# Data
+
+
+>This text is gonna be set off from the rest.
+
+In this sentence there is a math equation $x^2+3=$ `r x^2+3`.
+
+
+
+## mtcars
+
+
+## iris
