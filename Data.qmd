@@ -101,7 +101,8 @@ regime <- anckar %>%
          Parliamentarism=if_else(regime=="Parliamentarism",1,0))
 view(regime)
 
-REIGN %>% 
+REIGN %>%
+  view()
   count(gwf_regimetype) #GWF regime type
 ```
 

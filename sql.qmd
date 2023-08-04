@@ -1,0 +1,100 @@
+---
+title: "SQL in R"
+format: html
+editor: visual
+---
+
+# Setup
+```{r setup}
+library(RMySQL)
+library(SQL)
+
+library(odbc)
+library(DBI)
+library(tidyverse)
+
+library(RSQL)
+library(RSQLite)
+
+library(RPostgreSQL)
+library(bigrquery)
+
+library(data.table)
+
+library(vdemdata)
+library(democracyData)
+library(readxl)
+```
+
+# Create & Connect to SQL Database in R (Example) | Access, Interface Management & Software Packages
+
+## Connecting to database
+```{r}
+localsql <-  dbConnect(RMySQL::MySQL(),
+                            dbname='essex',
+                            host='localhost',
+                            port=3306,
+                            user='root',
+                            password='')
+
+dbListTables(localsql) 
+```
+```{r}
+db_user <- 'Qi'
+db_password <- 'uhzqI17'
+db_name <- 'db_reddy'
+db_host <- '16.171.198.48' # for local access
+db_port <- 3306
+
+Reddy <-  dbConnect(RMySQL::MySQL(), 
+                   user = db_user, 
+                   password = db_password,
+                   dbname = db_name, 
+                   host = db_host, 
+                   port = db_port)
+```
+mydb <-  dbConnect(RMySQL::MySQL(), 
+                   user = db_user, 
+                   password = db_password,
+                   dbname = db_name, 
+                   host = db_host, 
+                   port = db_port)
+
+```{r takeovers}
+IncumbentTakeovers <- read_excel("data/IncumbentTakeovers.xls")
+
+
+dbWriteTable(Reddy,"IncumbentTakeovers",IncumbentTakeovers,row.names=F)
+```
+```{r leaders}
+leaders1 <- fread("data/leader_reign.csv",encoding = "Latin-1")
+
+leaders2 <- fread("data/1March_Archigos_4.1.txt",encoding = "Latin-1")
+
+dbWriteTable(Reddy,"leaders1",leaders1,row.names=F,overwrite=T)
+dbWriteTable(Reddy,"leaders2",leaders2,row.names=F,overwrite=T)
+```
+
+
+```{r vdem}
+vdem <- vdem %>% 
+  select(ccode=COWcode,country_name,year,GDP=e_gdp,GDPpc=e_gdppc,population=e_pop,polity5=e_p_polity,Presidential_election=v2xel_elecpres,Successful_coups=e_coups,coups_powell=e_pt_coup,HOS_term_length=v2exfxtmhs,HOG_term_length=v2exfxtmhg) 
+vdemdata::codebook %>% 
+  view()
+dbWriteTable(Reddy,"vdem",vdem,row.names=F)
+```
+
+```{r regime}
+regime <- anckar 
+dbWriteTable(Reddy,"regime",regime,row.names=F)
+```
+
+
+```{r ccp}
+ccp <- fread("/Users/reddy/Downloads/ccpcnc_v4/ccpcnc/ccpcnc_v4.csv") %>% 
+  select(cowcode,country,year,evnt,evntyear,evnttype,hoshog,hosname,hoselect,hosterm,hosterml,hogname,hogelect,hogterm,hogterml)
+
+dbWriteTable(Reddy,"ccp",ccp,row.names=F)
+
+```
+

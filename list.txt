@@ -1,0 +1,16 @@
+BaseR.qmd
+Data.html
+Data.qmd
+Data_Management.Rproj
+Data_files
+README.md
+RMarkdown.Rmd
+RMarkdown.html
+RMarkdown.pdf
+Session_6_Processing.Rmd
+data
+ess_v2_homework.pdf
+list.txt
+rsconnect
+test.txt
+Hi

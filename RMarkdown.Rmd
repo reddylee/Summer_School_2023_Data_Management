@@ -45,3 +45,103 @@ In this sentence there is a math equation $x^2+3=$ `r x^2+3`.
 
 
 ## iris
+
+```{r}
+A <- matrix(c(1,2,2,3),nrow = 2)
+A
+solve(A)
+
+solve(A) %*% matrix(c(1,7))
+
+det(A)
+```
+```{r}
+B <- matrix(c(1,1,-2,1),nrow = 2,byrow = T)
+B
+B %*% solve(B)
+
+det(B)
+```
+```{r}
+x <- 1:12
+x
+
+m <- matrix(x,nrow = 3)
+m
+```
+
+```{r}
+n <- matrix(x,ncol = 4,byrow = T)
+n
+```
+```{r}
+dim(m)
+dim(x) <- c(4,3)
+x
+```
+```{r}
+m[2,3]
+m[1:2,3:4]
+```
+```{r}
+m[1,3] <- -3
+m
+```
+```{r}
+rownames(m) <- c("R1","R2","R3")
+m["R1",]
+```
+```{r}
+rowSums(m)
+colSums(m)
+colMeans(m)
+```
+```{r}
+m2 <- m[1:3,1:3]
+x2 <- x[1:3,1:3]
+m2+x2
+x2+m2
+x2;m2
+
+x2*m2
+```
+```{r}
+x2%*%m2
+```
+```{r}
+t(m2)
+
+t(m2)%*%m2
+
+solve(m2)
+```
+
+```{r}
+m1 <- matrix(c(1,1,-1,0),nrow = 2)
+m1
+solve(m1)
+det(m1)
+A <- m1%*%c(2,0)
+A
+B <- m1%*%c(4,0)
+C <- m1%*%c(4,2)
+D <- m1%*%c(2,2)
+
+A;B;C;D
+```
+
+```{r}
+E <- matrix(c(6,-1,-3,-4,3,3,1,5,3),nrow = 3,byrow = T)
+E
+det(E)
+```
+
+```{r}
+A <- matrix(c(1,2,0,1,3,0),nrow = 2)
+A
+A%*%t(A)
+t(A%*%t(A))
+t(A)%*%A
+t(t(A)%*%A)
+```
+
